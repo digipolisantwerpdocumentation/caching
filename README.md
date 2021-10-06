@@ -8,7 +8,7 @@ In de informatietechnologie wordt een cache beschreven als een **snelle data ops
 
 ## Doel
 
-Het primaire doel van caching is **snelheid (performance)**. Data wordt typisch in-memory opgeslagen om data access requests sneller te kunnen serven ten op zichte van de traditionele media (harde schijf, SSD).
+Het primaire doel van caching is **snelheid (performance)**. Data wordt typisch in-memory opgeslagen om data access requests sneller te kunnen serven ten op zichte van traditionele media (harde schijf, SSD).
 
 Als secundaire doelen kan caching ook **high availability** en **resiliency** verhogen, onder andere door onderliggende systemen te ontlasten.
 
@@ -41,22 +41,22 @@ Data kan ook in-memory of in local storage gecached worden op het device van de 
 
 <img src="images/web.png"/>
 
-**Server-side** tooling om het ophalen van web content te versnellen en de load op back-end systemen te verlichten. Web caching kan, afhankelijk van de implementatie, zowel
+Bij web caching spreken we over **Server-side** tooling om het ophalen van web content te versnellen en de load op back-end systemen te verlichten. Web caching kan, afhankelijk van de implementatie, zowel
 
 * **private** als **public** zijn. Cached data wordt gedeeld onder eindgebruikers, of niet.
-* **local** als **centralized** zijn. Data wordt lokaal gecached op de plaats waar het gebruikt wordt, zonder netwerk hops. Data wordt centraal gecached, bereikbaar over het netwerk, als single-node of gedistribueerde cluster.
+* **local** als **centralized** zijn. Data wordt lokaal gecached op de plaats waar het gebruikt wordt, zonder netwerk hops. Of, data wordt centraal gecached, bereikbaar over het netwerk, als single-node of gedistribueerde cluster.
 
 #### Gateway
 
-Digipolis gebruikt Kong als gateway. Onze Kong versie ondersteunt de [Reverse Proxy Cache](https://docs.konghq.com/hub/kong-inc/proxy-cache/) van Kong **niet**. Dit type wordt bijgevolg niet verder onderzocht of aangeraden.
+Digipolis gebruikt Kong als gateway. Onze Kong *versie* ondersteunt de [Reverse Proxy Cache](https://docs.konghq.com/hub/kong-inc/proxy-cache/) van Kong **niet**. Dit type wordt bijgevolg niet verder onderzocht of aangeraden.
 
 #### (Reverse) Proxy, Accelerator
 
 Net als bij client-side caching, kan een proxy server-side met **HTTP headers** het cache gedrag van een service beïnvloeden.
 
-Ook web of HTTP accelerators, zoals [Varnish](https://varnish-cache.org/), zijn in feite gewoon proxies, die recent of vaak gebruikte requests/responses cachen met als doel de latency te verlagen.
+Ook web of HTTP accelerators, zoals [Varnish](https://varnish-cache.org/), zijn in feite gewoon proxies, die recent of vaak gebruikte requests/responses of web content cachen met als doel de latency te verlagen.
 
-Ook dit wordt in feite niet echt gebruikt binnen Digipolis, al kan de **BFF** van een front-end applicatie beschouwd worden als proxy. In sommige gevallen kan het interessant zijn HTTP headers vanuit de BFF te manipuleren.
+Ook dit wordt in feite niet echt gebruikt binnen Digipolis, al kan de **BFF** van een front-end applicatie eventueel beschouwd worden als proxy. In sommige gevallen kan het interessant zijn HTTP headers vanuit de BFF te manipuleren.
 
 #### CDN
 
@@ -75,7 +75,7 @@ Digipolis services dienen een zeer lokaal publiek en bijgevolg is de kost van ee
 Een service kan er voor kiezen om eigen (**primaire**) data, of een aggretatie van (**secundaire**) data uit achterliggende services, te cachen. In geval van primaire data kan dit voordelig zijn om de performantie te verhogen, of de load op de primaire database te verlagen. In geval van secundaire data, kan dit naast performantie ook resiliency en high availability ten goede komen. Applicatief (service) caching kan zowel
 
 * **private** als **public** zijn. Cached data wordt gedeeld onder eindgebruikers, of niet.
-* **local** als **centralized** zijn. Data wordt lokaal gecached op de plaats waar het gebruikt wordt, zonder netwerk hops. Data wordt centraal gecached, bereikbaar over het netwerk, als single-node of gedistribueerde cluster.
+* **local** als **centralized** zijn. Data wordt lokaal gecached op de plaats waar het gebruikt wordt, zonder netwerk hops. Of, data wordt centraal gecached, bereikbaar over het netwerk, als single-node of gedistribueerde cluster.
 
 #### Local
 
@@ -85,9 +85,13 @@ Een service kan er voor kiezen om lokaal, in-memory, data te cachen. Gezien het 
 
 Een service kan ook gebruik maken van een externe bron om cache data weg te schrijven. Bij Digipolis wordt het gebruik van **Redis** aangeraden. Redis zorgt er voor dat services stateless blijven, maar toch verhoogde performantie (throughput, latency,..) kunnen aanbieden aan eindgebruikers.
 
-[Lees meer...](types/service/store.md)
+[Lees meer...](types/service/redis.md)
 
 #### Distributed
+
+Een service kan ook gebruik maken van een externe **gedistribueerde** bron om cache data weg te schrijven. Bij Digipolis wordt het gebruik van **Redis** aangeraden. Een gedistribueerde cluster verhoogt de high availability en persistance, maar verhoogt ook de kost, complexiteit en kans op data inconsistencies.
+
+[Lees meer...](types/service/redis.md)
 
 ### Database
 

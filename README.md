@@ -138,7 +138,7 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 
 * Wordt er gezocht naar een **quick** (and cheap) **win** of is enige **complexiteit** en bijhorende **kost** aanvaardbaar voor een effectievere oplossing?
 
-  Quick wins kunnen gehaald worden uit centrale componenten, waar geen aanpassingen in individuele applicaties nodig zijn. Mogelijks kan er gekeken worden naar caching op het niveau van de [Gateway](#gateway), [Proxies](#(reverse)-proxy,accelerator) of [HTTP accelerators](#(reverse)-proxy,accelerator). Of misschien kunnen de default caching mechanismen in centrale [databases](#database) verder gefinetuned worden.
+  Quick wins kunnen gehaald worden uit centrale componenten, waar geen aanpassingen in individuele applicaties nodig zijn. Mogelijks kan er gekeken worden naar caching op het niveau van de [Gateway](#gateway), [Proxies](#reverse-proxy-accelerator) of [HTTP accelerators](#reverse-proxy-accelerator). Of misschien kunnen de default caching mechanismen in centrale [databases](#database) verder gefinetuned worden.
 
 * Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
 

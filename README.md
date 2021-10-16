@@ -8,7 +8,7 @@ In de informatietechnologie wordt een cache beschreven als een **snelle data ops
 
 ## Doel
 
-Het primaire doel van caching is **snelheid (performance)**. Data wordt typisch in-memory opgeslagen om data access requests sneller te kunnen serven ten op zichte van traditionele media (harde schijf, SSD).
+Het primaire doel van caching is **snelheid (performance)**. Data wordt typisch in-memory opgeslagen om data access requests sneller te kunnen serven ten opzichte van traditionele media (harde schijf, SSD).
 
 Als secundaire doelen kan caching ook **high availability** en **resiliency** verhogen, onder andere door onderliggende systemen te ontlasten.
 
@@ -33,7 +33,7 @@ De browser bepaalt aan de hand van de eigen cache policies welke requests/respon
 
 #### Device
 
-Data kan ook in-memory of in local storage gecached worden op het device van de eindgebruiker. Denk aan iOS of Android apps, native windows applicaties,... Dit vraagt een **custom** implementatie. 
+Data kan ook in-memory of in local storage gecached worden op het device van de eindgebruiker. Denk aan iOS of Android apps, native Windows/OSX applicaties,... Dit vraagt een **custom** implementatie. 
 
 [Lees meer...](types/client-side/device.md)
 
@@ -72,7 +72,7 @@ Digipolis services dienen een zeer lokaal publiek en bijgevolg is de kost van ee
 
 <img src="images/service.png"/>
 
-Een service kan er voor kiezen om eigen (**primaire**) data, of een aggretatie van (**secundaire**) data uit achterliggende services, te cachen. In geval van primaire data kan dit voordelig zijn om de performantie te verhogen, of de load op de primaire database te verlagen. In geval van secundaire data, kan dit naast performantie ook resiliency en high availability ten goede komen. Applicatief (service) caching kan zowel
+Een service kan er voor kiezen om eigen (**primaire**) data, of een aggregatie van (**secundaire**) data uit achterliggende services, te cachen. In geval van primaire data kan dit voordelig zijn om de performance te verhogen, of de load op de primaire database te verlagen. In geval van secundaire data, kan dit naast performance ook resiliency en high availability ten goede komen. Applicatief (service) caching kan zowel
 
 * **private** als **public** zijn. Cached data wordt gedeeld onder eindgebruikers, of niet.
 * **local** als **centralized** zijn. Data wordt lokaal gecached op de plaats waar het gebruikt wordt, zonder netwerk hops. Of, data wordt centraal gecached, bereikbaar over het netwerk, als single-node of gedistribueerde cluster.
@@ -141,6 +141,8 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
   Quick wins kunnen gehaald worden uit centrale componenten, waar geen aanpassingen in individuele applicaties nodig zijn. Mogelijks kan er gekeken worden naar caching op het niveau van de [Gateway](#gateway), [Proxies](#reverse-proxy-accelerator) of [HTTP accelerators](#reverse-proxy-accelerator). Of misschien kunnen de default caching mechanismen in centrale [databases](#database) verder gefinetuned worden.
 
 * Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
+
+  Is de applicatie read-heavy, dan biedt deze vraag geen uitsluitsel.
 
 * Wat is de **aard** van de te cachen data?
 

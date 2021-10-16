@@ -142,7 +142,7 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 
 * Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
 
-  Deze vraag biedt geen uitsluitsel over *waar* in de keten een applicatie best kan cachen, maar kan wel een leidraad zijn in het kiezen van een **strategie**. De uitleg, voor- en nadelen van elke strategie of pattern kan gevonden worden in [design patterns](#design-patterns). Voor write-heavy applicaties kan bijvoorbeeld best gekozen worden voor *write-back / write-behind*.
+  Deze vraag biedt geen uitsluitsel over *waar* in de keten een applicatie best kan cachen, maar kan wel een leidraad zijn in het kiezen van een **strategie**. De uitleg, voor- en nadelen van elke strategie of pattern kan gevonden worden in [design patterns](#design-patterns-en-strategie). Voor write-heavy applicaties kan bijvoorbeeld best gekozen worden voor *write-back / write-behind*.
 
 * Wat is de **aard** van de te cachen data?
 
@@ -150,7 +150,31 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 
   Gaat het over afbeeldingen, video's, HTML, CSS, JS? Gaat het over unieke userdata/sessions? Chatberichten? Gaat het over constant geüpdatete business data? Gaat het over time-based feeds? Metadata, configuratiedata? Berekende data met zware resource kost zoals reports?
 
-## Design Patterns
+## Design Patterns en strategie
+
+Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design patterns of strategieën gekozen worden voor **[reading](#reading)**, **[writing](#writing)**, **[invalidation](#invalidation)**, **[eviction](#eviction)** en **[seeding](#seeding)**.
+
+### Reading
+
+#### Cache-aside
+
+#### Read-through
+
+### Writing
+
+#### write-through
+
+#### write-back / write-behind
+
+#### write-around
+
+#### refresh-ahead
+
+### Invalidation
+
+### Eviction
+
+### Seeding
 
 ## Testing
 

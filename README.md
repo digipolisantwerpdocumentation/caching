@@ -97,6 +97,10 @@ Een service kan ook gebruik maken van een externe **gedistribueerde** bron om ca
 
 <img src="images/database.png"/>
 
+De meest gangbare databases hebben ook interne mechanismes om zaken als veel of recent gebruikte queries in-memory te houden. Queries die in-memory zitten kunnen veel sneller opgevraagd worden. Zo gebruikt Digipolis onder andere Mongodb, [dat WiredTiger gebruikt](https://docs.mongodb.com/manual/faq/fundamentals/#does-mongodb-handle-caching-) om queries vanuit cache te serven. Ook PostgreSQL cachet data in tables, indexes en in sommige gevallen, [query execution plans](https://www.postgresql.org/docs/9.4/plpgsql-implementation.html) (geen ad-hoc queries).
+
+In de meeste gevallen wordt niet aangeraden om aan de defaults te sleutelen.
+
 ### Shared
 
 Een centraal cache kan in zekere zin verschillende services binnen hetzelfde domein serven. Meestal wordt dit **niet** door Digipolis aangeraden. We hanteren hier dezelfde regelen als bij het delen van primaire databases. Sharing zorgt voor **high coupling** tussen gebruikmakende services. Dit gaat in tegen de principes van Microservices.
@@ -109,15 +113,36 @@ Algemeen geldt dat caching een oplossing voor een probleem moet zijn, geen inher
 
 In andere gevallen kan een cache oplossingen bieden, wanneer 
 
-* throughput omhoog moet.
-* latency omlaag moet.
-* back-end systemen ontlast moeten worden.
-* Eventuele data inconsistencies door replicatie acceptabel zijn.
-* Data geografisch gedistribueerd moet worden.
+* (read) **throughput** omhoog moet.
+* **latency** omlaag moet.
+* back-end systemen **ontlast** moeten worden.
+* **availability** omhoog moet.
+* Eventuele data **inconsistencies** (**stale** data) door replicatie acceptabel zijn.
+* Data **geografisch** gedistribueerd moet worden.
 
 ## Welke vorm van caching moet mijn service implementeren?
 
+*It depends...* Dit zijn enkele vragen die gesteld moeten worden:
 
+* Moet een deel van de data **offline** beschikbaar blijven?
+
+  Indien de applicatie (of een deel er van) altijd beschikbaar moet blijven voor een eindgebruiker, zelfs bij een netwerkstoring, moet er gebruik gemaakt worden van [client-side caching](#client-side).
+
+* Is het erg om de **controle** over het cache voor een deel uit handen te geven aan een user?
+
+  Ja? client-side caching is ongeschikt. De gebruiker kan dit ongevraagd leeghalen, en zo het systeem belasten. Of door slechte synchronisatie, bijvoorbeeld bij netwerkstoringen, kan het cache snel stale worden. Mogelijks biedt [web caching](#web) of [service caching](#service) een oplossing.
+
+* Waar in de keten hebben we effectief de mogelijkheid om **aanpassingen** uit te voeren?
+
+  Is het antwoord overal? Dan wordt aangeraden om [client-side caching](#client-side) met [service caching](#service) te combineren. Service caching geeft de mogelijkheid om met zeer veel controle op service niveau te bepalen welke data wel of niet belangrijk is om *hot* in het cache te houden. Client-caching geeft dan weer de mogelijkheid om zeer specifieke zaken, enkel voor één specifieke user, lokaal op te slaan. Daar kan het enorm snel en betrouwbaar opgehaald worden.
+
+* Wordt er gezocht naar een **quick** (and cheap) **win** of is enige **complexiteit** en bijhorende **kost** aanvaardbaar voor een effectievere oplossing?
+
+  Quick wins kunnen gehaald worden uit centrale componenten, waar geen aanpassingen in individuele applicaties nodig zijn. Mogelijks kan er gekeken worden naar caching op het niveau van de [Gateway](#gateway), [Proxies](#(reverse)-proxy,accelerator) of [HTTP accelerators](#(reverse)-proxy,accelerator). Of misschien kunnen de default caching mechanismen in centrale [databases](#database) verder gefinetuned worden.
+
+* Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
+
+* Wat is de **aard** van de te cachen data?
 
 ## Design Patterns
 
@@ -133,6 +158,7 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 * [Blog - Caching strategies](https://codeahoy.com/2017/08/11/caching-strategies-and-how-to-choose-the-right-one/)
 * [Blog - Caching design patterns](https://shahriar.svbtle.com/Understanding-writethrough-writearound-and-writeback-caching-with-python)
 * [Blog - Caching strategies](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/)
+* [Blog - System Design Primer](https://github.com/donnemartin/system-design-primer#cache)
 * [Redis - Data Types](https://redis.io/topics/data-types-intro)
 * [Redis - Pipelining](https://redis.io/topics/pipelining)
 * [Redis - Eviction](https://docs.redis.com/latest/rs/administering/database-operations/eviction-policy/)

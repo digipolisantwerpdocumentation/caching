@@ -142,9 +142,13 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 
 * Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
 
-  Is de applicatie read-heavy, dan biedt deze vraag geen uitsluitsel.
+  Deze vraag biedt geen uitsluitsel over *waar* in de keten een applicatie best kan cachen, maar kan wel een leidraad zijn in het kiezen van een **strategie**. De uitleg, voor- en nadelen van elke strategie of pattern kan gevonden worden in [design patterns](#design-patterns). Voor write-heavy applicaties kan bijvoorbeeld best gekozen worden voor *write-back / write-behind*.
 
 * Wat is de **aard** van de te cachen data?
+
+  Is de data statisch of dynamisch? Is consistency van de data mission-critical of onbelangrijk? Kan relevante data makkelijk gegroepeerd worden voor een grote groep gebruikers of niet? Kan makkelijk voorspeld worden welk subset van de data vaak opgevraagd zal worden?
+
+  Gaat het over afbeeldingen, video's, HTML, CSS, JS? Gaat het over unieke userdata/sessions? Chatberichten? Gaat het over constant geüpdatete business data? Gaat het over time-based feeds? Metadata, configuratiedata? Berekende data met zware resource kost zoals reports?
 
 ## Design Patterns
 

@@ -215,11 +215,11 @@ def cache_aside(self, content_id):
 
 ##### Voor- en nadelen
 
-| Voordelen | Nadelen |
-| --------- | ------- |
-|           |         |
-|           |         |
-|           |         |
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Het **datamodel** kan, in tegenstelling tot read-through, onafhankelijk evolueren | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
+| Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
+| Cache-aside is **resilient**, de applicatie blijft werken, zolang het cache ***of*** de database beschikbaar is. | **Aanpassingen** in applicatielogica nodig.                  |
 
 #### Read-through
 
@@ -240,11 +240,12 @@ def read_through(self, content_id):
 
 ##### Voor- en nadelen
 
-| Voordelen | Nadelen |
-| --------- | ------- |
-|           |         |
-|           |         |
-|           |         |
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Geen aanpassingen** in applicatielogica nodig.             | Het **datamodel** moet volledig overeenstemmen met dat van de primaire database. |
+| Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Read-through is minder **resilient** dan cache-aside. Het cache is een single-point-of-failure. |
+|                                                              | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
+|                                                              | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
 
 ### Writing
 

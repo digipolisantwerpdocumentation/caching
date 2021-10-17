@@ -158,11 +158,11 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 #### Cache-aside
 
-<img src="images/cache-aside.png"/>
+<img src="images/cache-aside.png" width="85%"/>
 
 #### Read-through
 
-<img src="images/read-through.png">
+<img src="images/read-through.png" width="90%"/>
 
 ### Writing
 

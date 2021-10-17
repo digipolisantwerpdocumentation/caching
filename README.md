@@ -176,7 +176,7 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 #### write-around
 
-#### refresh-ahead
+<img src="images/write-around.png" width="75%"/>
 
 ### Invalidation
 

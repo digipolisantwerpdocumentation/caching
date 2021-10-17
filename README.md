@@ -29,7 +29,7 @@
       - [write-through](#write-through)
       - [write-back / write-behind](#write-back--write-behind)
       - [write-around](#write-around)
-    + [Invalidation](#invalidation)
+    + [Invalidation](#invalidation-expiration)
     + [Eviction](#eviction)
     + [Seeding](#seeding)
   * [Testing](#testing)
@@ -137,7 +137,7 @@ In de meeste gevallen wordt niet aangeraden om aan de defaults te sleutelen.
 
 ### Shared
 
-Een centraal cache kan in zekere zin verschillende services binnen hetzelfde domein serven. Meestal wordt dit **niet** door Digipolis aangeraden. We hanteren hier dezelfde regelen als bij het delen van primaire databases. Sharing zorgt voor **high coupling** tussen gebruikmakende services. Dit gaat in tegen de principes van Microservices.
+Een centraal cache kan in zekere zin verschillende services binnen hetzelfde domein serven. Meestal wordt dit **niet** door Digipolis aangeraden. We hanteren hier dezelfde regels als bij het delen van primaire databases. Sharing zorgt voor **high coupling** tussen gebruikmakende services. Dit gaat in tegen de principes van Microservices.
 
 ## Moet mijn service cachen?
 
@@ -332,7 +332,25 @@ def write_around(self, content):
 | Kleine kans op **flooding** (vollopen). Enkel data dat echt opgevraagd wordt, bevindt zich in het cache (dankzij reading pattern). | Veel **downstream** requests na **first-misses**.            |
 |                                                              | Nood aan data **pre-heating** / pre-warming is hoger.        |
 
-### Invalidation
+### Invalidation (Expiration)
+
+Het invalideren van een cache is een proces dat op basis van vooraf bepaalde levensduur data verwijdert. Invalidatie bestaat om zoveel mogelijk het stale worden van data in een cache te vermijden.
+
+#### TTL
+
+De meest eenvoudige vorm van expiration is een TTL (time to live). Dit wil zeggen, de tijd dat een key en zijn bijbehorende value nog leeft, alvorens verwijderd te worden, in seconden.
+
+Deze kan zo gezet worden:
+
+```sql
+SET key_name value EX 60
+```
+
+Zonder de TTL expliciet te setten is deze oneindig. Het expliciet benoemen van de TTL op basis van de data is dus zeer belangrijk. Nog belangrijk is in productie te monitoren of deze TTL zinvol is en bij te sturen wanneer nodig. Zie hoofdstuk [Aftercare](#aftercare) voor meer informatie.
+
+#### Dynamic TTL met backpressure event
+
+Een ‘strenge’ TTL, dwz. Een zeer korte TTL kan altijd dynamisch aangepast worden door de applicatie, wanneer deze merkt dat er te veel downstream requests binnenkomen en een overload van de service dreigt.
 
 ### Eviction
 

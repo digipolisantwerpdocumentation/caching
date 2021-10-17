@@ -192,6 +192,8 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 Voor het uitlezen van een cache zijn er maar twee patterns. Algemeen kan genomen worden dat het cache altijd **eerst** uitgelezen moet worden, voor de database geraadpleegd wordt. Naast uitlezen bij **hits**, vullen beide patterns het cache ook aan bij **misses**. Reading patterns doen dus aan ***lazy-loading***, waardoor de eerste request altijd een miss zal veroorzaken. Best kunnen deze patterns *in combinatie met* een writing pattern gebruikt worden.
 
+<u>**Digipolis moedigt het gebruik van cache-aside als reading pattern aan**</u>. Digipolis biedt geen support op tools als [RedisGears](https://github.com/RedisGears/RedisGears) en [AWS DAX](https://aws.amazon.com/dynamodb/dax/) die read-through haalbaar maken.
+
 #### Cache-aside
 
 <img src="images/cache-aside.png" width="85%"/>
@@ -219,7 +221,7 @@ def cache_aside(self, content_id):
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | Het **datamodel** kan, in tegenstelling tot read-through, onafhankelijk evolueren | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
 | Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
-| Cache-aside is **resilient**, de applicatie blijft werken, zolang het cache ***of*** de database beschikbaar is. | **Aanpassingen** in applicatielogica nodig.                  |
+| Cache-aside is **resilient**, de applicatie blijft werken, zolang het cache ***of*** de database beschikbaar is. | **Aanpassingen** aan applicatielogica nodig.                 |
 
 #### Read-through
 
@@ -242,12 +244,14 @@ def read_through(self, content_id):
 
 | Voordelen                                                    | Nadelen                                                      |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Geen aanpassingen** in applicatielogica nodig.             | Het **datamodel** moet volledig overeenstemmen met dat van de primaire database. |
+| **Geen aanpassingen** aan applicatielogica nodig.            | Het **datamodel** moet volledig overeenstemmen met dat van de primaire database. |
 | Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Read-through is minder **resilient** dan cache-aside. Het cache is een single-point-of-failure. |
 |                                                              | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
 |                                                              | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
 
 ### Writing
+
+Voor het opvullen van een cache zijn er verschillende patterns. **<u>De juiste keuze hangt af van de situatie</u>**, al biedt Digipolis geen rechstreekse ondersteuning voor implementaties van write-through en write-behind waarbij het cache rechstreeks synchroniseert met de database, zonder tussenkomst van de applicatie.
 
 #### write-through
 
@@ -267,11 +271,11 @@ def write_through(self, content):
 
 ##### Voor- en nadelen
 
-| Voordelen | Nadelen |
-| --------- | ------- |
-|           |         |
-|           |         |
-|           |         |
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| De kans op data **inconsistencies** is zeer klein, aanpassingen worden onmiddelijk in het cache opgenomen.<br />Aan de read kant zorgt dit voor **low-latency reads**, aangezien misses vermeden worden. | Writes zijn eerder traag, aangezien de commit naar de consumer toe pas gebeurd na voltooing van beide writes. Door de **high-latency writes** is dit mogelijks geen geschikt pattern voor **write-heavy** applicaties. |
+| De kans op **data loss** is zeer klein.                      | **Aanpassingen** aan applicatielogica nodig.                 |
+| **downstream requests** (richting database) zijn zeer beperkt. | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
 
 #### write-back / write-behind
 

@@ -1,3 +1,5 @@
+
+
 # Caching @ Digipolis
 
 - [Caching @ Digipolis](#caching---digipolis)
@@ -188,13 +190,61 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 ### Reading
 
+Voor het uitlezen van een cache zijn er maar twee patterns. Algemeen kan genomen worden dat het cache altijd **eerst** uitgelezen moet worden, voor de database geraadpleegd wordt. Naast uitlezen bij **hits**, vullen beide patterns het cache ook aan bij **misses**. Reading patterns doen dus aan ***lazy-loading***, waardoor de eerste request altijd een miss zal veroorzaken. Best kunnen deze patterns *in combinatie met* een writing pattern gebruikt worden.
+
 #### Cache-aside
 
 <img src="images/cache-aside.png" width="85%"/>
 
+##### Flow
+
+1. De applicatie raadpleegt het cache.
+   Bij een *hit*, wordt het resultaat teruggegeven aan de consumer.
+2. Bij een *miss*, raadpleegt de applicatie de database en geeft dit terug aan de consumer.
+3. De applicatie vult tenslotte ook het cache.
+
+```python
+def cache_aside(self, content_id):
+    content = redis.get(content_id)
+    if content is None:
+        content = postgresql.get(content_id)
+        if content is not None:
+            redis.set(content_id, content)
+    return content
+```
+
+##### Voor- en nadelen
+
+| Voordelen | Nadelen |
+| --------- | ------- |
+|           |         |
+|           |         |
+|           |         |
+
 #### Read-through
 
 <img src="images/read-through.png" width="90%"/>
+
+##### Flow
+
+1. De applicatie raadpleegt het cache.
+   Bij een *hit*, wordt het resultaat teruggegeven aan de consumer.
+2. Bij een *miss*, raadpleegt **het cache of de cache library** de database en geeft dit terug aan de consumer.
+3. Het cache vult zichzelf aan.
+
+```python
+def read_through(self, content_id):
+    redis.get(content_id)
+    # Cache or cache library consults db if necessary
+```
+
+##### Voor- en nadelen
+
+| Voordelen | Nadelen |
+| --------- | ------- |
+|           |         |
+|           |         |
+|           |         |
 
 ### Writing
 

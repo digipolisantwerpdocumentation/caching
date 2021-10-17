@@ -338,7 +338,7 @@ Het invalideren van een cache is een proces dat op basis van vooraf bepaalde lev
 
 #### TTL
 
-De meest eenvoudige vorm van expiration is een TTL (time to live). Dit wil zeggen, de tijd dat een key en zijn bijbehorende value nog leeft, alvorens verwijderd te worden, in seconden.
+De meest eenvoudige vorm van expiration is een TTL (**time to live**). Dit wil zeggen, de tijd dat een key en zijn bijbehorende value nog leeft, alvorens verwijderd te worden, in seconden.
 
 Deze kan zo gezet worden:
 
@@ -346,13 +346,50 @@ Deze kan zo gezet worden:
 SET key_name value EX 60
 ```
 
-Zonder de TTL expliciet te setten is deze oneindig. Het expliciet benoemen van de TTL op basis van de data is dus zeer belangrijk. Nog belangrijk is in productie te monitoren of deze TTL zinvol is en bij te sturen wanneer nodig. Zie hoofdstuk [Aftercare](#aftercare) voor meer informatie.
+Zonder de TTL expliciet te setten is deze **oneindig**. Het expliciet benoemen van de TTL op basis van de data is dus zeer belangrijk. Nog belangrijk is in productie te monitoren of deze TTL zinvol is en bij te sturen wanneer nodig. Zie hoofdstuk [Aftercare](#aftercare) voor meer informatie.
 
 #### Dynamic TTL met backpressure event
 
 Een ‘strenge’ TTL, dwz. Een zeer korte TTL kan altijd dynamisch aangepast worden door de applicatie, wanneer deze merkt dat er te veel downstream requests binnenkomen en een overload van de service dreigt.
 
 ### Eviction
+
+Eviction is net als Invalidation een proces dat uiteindelijk data uit het cache zal verwijderen, maar gebruikt daarvoor **cachegrootte** als ‘trigger’, **niet tijd**. Wanneer het cache een vooraf bepaalde grootte overtreedt, kan het cache data vrijmaken op basis van een aantal algoritmes.
+
+<u>**Digipolis adviseert in de meeste gevallen het gebruik van Least Recently Used in Redis (volatile-lru)**</u>.
+
+#### Least Recently Used (LRU)
+
+De minst **recent** gebruikte keys (en bijhorende values) worden uit het cache verwijderd, bij overtreding van de geconfigureerde grootte threshold.
+
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Het dure cache bevat bevat geen data al lang niet meer opgevraagd werd. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LRU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden. |
+|                                                              | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
+
+#### Least Frequently Used (LFU)
+
+De **minst gebruikte** keys (en bijhorende values) worden uit het cache verwijderd, bij overtreding van de geconfigureerde grootte threshold.
+
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Het dure cache bevat nooit data dat nooit of amper opgevraagd wordt. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LFU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden. |
+|                                                              | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
+|                                                              |                                                              |
+
+#### Most Recently Used (MRU)
+
+De meest recent gebruikte keys (en bijhorende values) worden uit het cache verwijderd, bij overtreding van de geconfigureerde grootte threshold.
+
+Deze strategie is enkel zinvol in zeer specifieke usecases. Wanneer kan het feit dat de data net uitgelezen is een indicatie zijn dat ze waarschijnlijk niet meer uitgelezen zal worden?
+
+Denk bijvoorbeeld aan busstop informatie of vliegtuig vertrekuren.
+
+#### First In First Out (FIFO)
+
+Er wordt niet gekeken naar hoe vaak, of wanneer, keys gebruikt worden. De eerst toegevoegde keys (en bijhorende values) worden als eerste verwijderd.
+
+Net als MRU is FIFO enkel in zeer specifieke usecases beter dan LRU of LFU.
 
 ### Seeding
 

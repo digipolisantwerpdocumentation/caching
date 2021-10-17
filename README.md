@@ -273,9 +273,10 @@ def write_through(self, content):
 
 | Voordelen                                                    | Nadelen                                                      |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| De kans op data **inconsistencies** is zeer klein, aanpassingen worden onmiddelijk in het cache opgenomen.<br />Aan de read kant zorgt dit voor **low-latency reads**, aangezien misses vermeden worden. | Writes zijn eerder traag, aangezien de commit naar de consumer toe pas gebeurd na voltooing van beide writes. Door de **high-latency writes** is dit mogelijks geen geschikt pattern voor **write-heavy** applicaties. |
+| De kans op data **inconsistencies** is zeer klein, aanpassingen worden onmiddelijk in het cache opgenomen.<br />Aan de read kant zorgt dit voor **low-latency reads**, aangezien **first-misses** vermeden worden. | Writes zijn eerder traag, aangezien de commit naar de consumer toe pas gebeurd na voltooing van beide writes. Door de **high-latency writes** is dit mogelijks geen geschikt pattern voor **write-heavy** applicaties. |
 | De kans op **data loss** is zeer klein.                      | **Aanpassingen** aan applicatielogica nodig.                 |
 | **downstream requests** (richting database) zijn zeer beperkt. | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
+| Nood aan data **pre-heating** / pre-warming is zeer klein.   |                                                              |
 
 #### write-back / write-behind
 
@@ -286,7 +287,7 @@ def write_through(self, content):
 1. Een consumer wil iets toevoegen, aanpassen of verwijderen in de applicatie.
 2. De aanpassing wordt eerst opgeslagen in het cache.
 3. De aanpassing wordt bevestigd aan de consumer.
-4. De aanpassing wordt opgeslagen in de database.
+4. De aanpassing wordt **pas daarna** (**asynchroon**) opgeslagen in de database.
 
 ```python
 import asyncio
@@ -301,11 +302,12 @@ async def write_postgresql_async(self, content):
 
 ##### Voor- en nadelen
 
-| Voordelen | Nadelen |
-| --------- | ------- |
-|           |         |
-|           |         |
-|           |         |
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Lage **latency** en hoge **throughput** voor write-heavy applicaties. | **Aanpassingen** aan applicatielogica nodig.                 |
+| Lage **latency** en hoge **throughput** voor read-heavy applicaties. | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
+| Lage kans op **first-misses**.                               | Grotere kans op **data-loss** en **inconsistencies** door asynchrone verwerking. |
+| Nood aan data **pre-heating** / pre-warming is zeer klein.   |                                                              |
 
 #### write-around
 
@@ -324,11 +326,11 @@ def write_around(self, content):
 
 ##### Voor- en nadelen
 
-| Voordelen | Nadelen |
-| --------- | ------- |
-|           |         |
-|           |         |
-|           |         |
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| De enige optie als er geen controle over de applicatiecode is. | Houdt enkel steek in **combinatie** met een reading pattern als cache-aside en read-through. |
+| Kleine kans op **flooding** (vollopen). Enkel data dat echt opgevraagd wordt, bevindt zich in het cache (dankzij reading pattern). | Veel **downstream** requests na **first-misses**.            |
+|                                                              | Nood aan data **pre-heating** / pre-warming is hoger.        |
 
 ### Invalidation
 

@@ -168,6 +168,8 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 #### write-through
 
+<img src="images/write-through.png" width="85%"/>
+
 #### write-back / write-behind
 
 #### write-around
@@ -193,12 +195,14 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 * [Blog - Caching design patterns](https://shahriar.svbtle.com/Understanding-writethrough-writearound-and-writeback-caching-with-python)
 * [Blog - Caching strategies](https://nickcraver.com/blog/2019/08/06/stack-overflow-how-we-do-app-caching/)
 * [Blog - System Design Primer](https://github.com/donnemartin/system-design-primer#cache)
+* [Redis - Caching Use cases](https://redis.com/solutions/use-cases/caching/)
 * [Redis - Data Types](https://redis.io/topics/data-types-intro)
 * [Redis - Pipelining](https://redis.io/topics/pipelining)
 * [Redis - Eviction](https://docs.redis.com/latest/rs/administering/database-operations/eviction-policy/)
 * [Redis - Transactions](https://redis.io/topics/transactions#cas)
 * [Redis - Indexing](https://redis.io/topics/indexes)
 * [Redis - Client side caching](https://redis.io/topics/client-side-caching)
+* [RedisGears - Write-through / Write-behind](https://github.com/RedisGears/rgsync)
 * [Kong - Gateway caching](https://docs.konghq.com/gateway-oss/0.11.x/plugin-development/entities-cache/)
 * [Kong - Reverse Proxy Cache](https://docs.konghq.com/hub/kong-inc/proxy-cache/)
 * [Mozilla - HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)

@@ -172,6 +172,8 @@ Naast kiezen *waar* een applicatie zal cachen, moeten er ook weloverwogen design
 
 #### write-back / write-behind
 
+<img src="images/write-back.png" width="85%"/>
+
 #### write-around
 
 #### refresh-ahead

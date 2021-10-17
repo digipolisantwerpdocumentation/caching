@@ -252,13 +252,78 @@ def read_through(self, content_id):
 
 <img src="images/write-through.png" width="85%"/>
 
+##### Flow
+
+1. Een consumer wil iets toevoegen, aanpassen of verwijderen in de applicatie.
+2. De aanpassing wordt zowel in het cache als in de database opgeslagen. De volgorde is niet belangrijk. Opslaan in de database kan via applicatielogica, via het cache zelf of via de cache library.
+3. De consumer krijgt pas resultaat wanneer beide acties voltooid zijn.
+
+```python
+def write_through(self, content):
+    redis.write(content)
+    postgresql.write(content)
+```
+
+##### Voor- en nadelen
+
+| Voordelen | Nadelen |
+| --------- | ------- |
+|           |         |
+|           |         |
+|           |         |
+
 #### write-back / write-behind
 
 <img src="images/write-back.png" width="85%"/>
 
+##### Flow
+
+1. Een consumer wil iets toevoegen, aanpassen of verwijderen in de applicatie.
+2. De aanpassing wordt eerst opgeslagen in het cache.
+3. De aanpassing wordt bevestigd aan de consumer.
+4. De aanpassing wordt opgeslagen in de database.
+
+```python
+import asyncio
+
+def write_back(self, content):
+    redis.write(content)
+    await def write_postgresql_async(content)
+    
+async def write_postgresql_async(self, content):
+    postgresql.write(content)
+```
+
+##### Voor- en nadelen
+
+| Voordelen | Nadelen |
+| --------- | ------- |
+|           |         |
+|           |         |
+|           |         |
+
 #### write-around
 
 <img src="images/write-around.png" width="75%"/>
+
+##### Flow
+
+1. Een consumer wil iets toevoegen, aanpassen of verwijderen in de applicatie.
+2. De aanpassing wordt eerst opgeslagen in de database.
+3. De aanpassing wordt bevestigd aan de consumer.
+
+```python
+def write_around(self, content):
+    postgresql.write(content)
+```
+
+##### Voor- en nadelen
+
+| Voordelen | Nadelen |
+| --------- | ------- |
+|           |         |
+|           |         |
+|           |         |
 
 ### Invalidation
 

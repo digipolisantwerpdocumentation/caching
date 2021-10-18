@@ -332,6 +332,15 @@ def write_around(self, content):
 | Kleine kans op **flooding** (vollopen). Enkel data dat echt opgevraagd wordt, bevindt zich in het cache (dankzij reading pattern). | Veel **downstream** requests na **first-misses**.            |
 |                                                              | Nood aan data **pre-heating** / pre-warming is hoger.        |
 
+#### Cron jobs
+
+<img src="images/cron-job.png" width="80%"/>
+
+Een cron job of ander periodieke trigger haalt vult op vooraf bepaalde tijdstippen het cache aan.
+Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (write) + cache-aside (read) mitigeren.
+
+We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
+
 ### Invalidation (Expiration)
 
 Het invalideren van een cache is een proces dat op basis van vooraf bepaalde levensduur data verwijdert. Invalidatie bestaat om zoveel mogelijk het stale worden van data in een cache te vermijden.
@@ -391,6 +400,33 @@ Er wordt niet gekeken naar hoe vaak, of wanneer, keys gebruikt worden. De eerst 
 Net als MRU is FIFO enkel in zeer specifieke usecases beter dan LRU of LFU.
 
 ### Seeding
+
+#### Deployments
+
+Bij deployments van downstream services is het aan te raden om de relevante delen van het cache leeg te maken en opnieuw op te vullen. Het datamodel kan gewijzigd zijn of data van voor de deployment kan stale geworden zijn.
+
+Om dit efficiënt te laten verlopen kunnen calls naar Redis best in batch verstuurd worden. Hierbij willen we niet dat één call de hele transactie doet falen. Dit is wat we non-transactional request batching noemen.
+
+In Redis kan dit met **Redis Pipelining**.
+
+Via een seedscript (client) kunnen meerdere requests naar de Redis server gestuurd worden zonder telkens op het antwoord te wachten, Redis stuurt na afloop het antwoord in één reply terug.
+
+```sql
+def with_pipelining
+    r = Redis.new
+    r.pipelined {
+        10000.times {
+            r.ping
+        }
+    }
+end
+```
+
+#### Cache Outage
+
+Hetzelfde geldt bij een langdurige cache outage. Data kan opnieuw stale geworden zijn of de data is gewoon verdwenen door de invalidation of eviction policies.
+
+Het cache kan best met non-transactional request batching weer opgevuld worden.
 
 ## Testing
 

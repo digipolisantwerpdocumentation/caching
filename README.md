@@ -334,12 +334,21 @@ def write_around(self, content):
 
 #### Cron jobs
 
-<img src="images/cron-job.png" width="80%"/>
+<img src="images/cron-job.png" width="90%"/>
 
 Een cron job of ander periodieke trigger haalt vult op vooraf bepaalde tijdstippen het cache aan.
 Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (write) + cache-aside (read) mitigeren.
 
 We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
+
+##### Voor- en nadelen
+
+| Voordelen                                                    | Nadelen                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Geen aanpassingen** aan applicatielogica nodig.            | Grote kans op **first-misses** en downstream requests.       |
+| Geeft de mogelijkheid enkel **exact** op te halen wat nodig is. | Grote kans op **inconsistencies**. (acceptabel bij low-write/statische applicaties) |
+| Geeft de mogelijkheid de database enkel onder load te zetten op **luwe** momenten. (bijvoorbeeld ‘s nachts) |                                                              |
+| Cache kan eventueel in **batch** aangevuld worden.           |                                                              |
 
 ### Invalidation (Expiration)
 

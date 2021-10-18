@@ -341,14 +341,6 @@ Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (writ
 
 We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
-#### Events
-
-##### Data-carrying events
-
-<img src="images/data-carrying-events.png"/>
-
-##### Non data-carrying events
-
 ##### Voor- en nadelen
 
 | Voordelen                                                    | Nadelen                                                      |
@@ -357,6 +349,31 @@ We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 | Geeft de mogelijkheid enkel **exact** op te halen wat nodig is. | Grote kans op **inconsistencies**. (acceptabel bij low-write/statische applicaties) |
 | Geeft de mogelijkheid de database enkel onder load te zetten op **luwe** momenten. (bijvoorbeeld ‘s nachts) |                                                              |
 | Cache kan eventueel in **batch** aangevuld worden.           |                                                              |
+
+#### Events
+
+##### Data-carrying events
+
+<img src="images/data-carrying-events.png"/>
+
+##### Voor- en nadelen
+
+| Voordelen                                            | Nadelen                                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| **Asynchrone** afhandeling (load, availability,...). | Hoog risico voor **stale data** write-heavy applicaties.     |
+| Weinig **downstream** **requests** nodig.            | Verhoogde **complexiteit** voor zowel business engine als PZA webplatform.<br />Houdt alleen steek als originele service al events uitstuurt. |
+
+##### Non data-carrying events
+
+<img src="images/non-data-carrying-events.png"/>
+
+##### Voor- en nadelen
+
+| Voordelen                                                    | Nadelen                                   |
+| ------------------------------------------------------------ | ----------------------------------------- |
+| **Asynchrone** afhandeling (load, availability).             | Veel **downstream requests**.             |
+| Kleinere kans op **stale data**, aangezien de effectieve data pas op het moment zelf wordt opgehaald. | Zeer hoge **complexiteit**.               |
+|                                                              | **Broos** systeem (too many moving parts) |
 
 ### Invalidation (Expiration)
 

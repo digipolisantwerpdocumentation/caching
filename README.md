@@ -341,6 +341,14 @@ Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (writ
 
 We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
+#### Events
+
+##### Data-carrying events
+
+<img src="images/data-carrying-events.png"/>
+
+##### Non data-carrying events
+
 ##### Voor- en nadelen
 
 | Voordelen                                                    | Nadelen                                                      |

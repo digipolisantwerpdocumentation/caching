@@ -1,1 +1,3 @@
+# Client-side device caching
+
 use cases, voor + nadelen, tooling, technische uitleg, challenges,...

@@ -451,7 +451,37 @@ Het cache kan best met non-transactional request batching weer opgevuld worden.
 
 ## Testing
 
+[WIP]
+
 ## Aftercare
+
+Aftercare, of **cache finetuning** op basis van real-time use is essentieel voor een efficiënte oplossing. 
+
+De kans dat de juiste cache size, een gezonde cache hit/miss ratio, een beperkt aantal downstream requests en andere zaken van de eerste poging bij real-time use tot een balans in performantie en kostefficientie leidt, is eerder klein.
+
+Een aantal zaken die je kan tracken en op basis van feedback finetunen:
+
+- Effectieve cache size.
+
+  *Te groot geschaald? Onnodige kost. Te klein geschaald? Performantie drawbacks.*
+
+- Downstream requests (naar business engines).
+
+  *Te veel downstream requests kan de onderliggende service belasten en duidt mogelijks op een slechte cache strategie.*
+
+- Total cache hits & misses.
+
+  *Minder dan 80% hits, aanpassingen nodig. mik op 90%+ hits*
+
+- Effect [Eviction](#eviction) policy.
+
+  *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve eviction policy.*
+  *Past deze policy wel bij de use case?*
+
+- Effect van [Invalidation]((#invalidation-expiration)) policy.
+
+  *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve invalidation policy.*
+  *Past deze policy wel bij de use case?*
 
 ## Bronnen
 

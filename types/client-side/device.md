@@ -49,4 +49,6 @@ De juiste keuze maken kan op basis van volgende factoren:
 
 ### File System
 
-### 
+## React Native
+
+### AsyncStorage

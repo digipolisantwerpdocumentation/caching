@@ -104,15 +104,15 @@ Een service kan er voor kiezen om lokaal, in-memory, data te cachen. Gezien het 
 
 #### Single-node
 
-Een service kan ook gebruik maken van een externe bron om cache data weg te schrijven. Bij Digipolis wordt het gebruik van **Redis** aangeraden. Redis zorgt er voor dat services stateless blijven, maar toch verhoogde performantie (throughput, latency,..) kunnen aanbieden aan eindgebruikers.
+Een service kan ook gebruik maken van een externe bron om cache data weg te schrijven. Een voorbeeld van zo'n externe database, is Redis. Digipolis biedt voorlopig geen centrale Redis instance met persistance aan, maar Redis kan wel containerized gedeployed worden naast de service. Redis zorgt er voor dat services stateless blijven, maar toch verhoogde performantie (throughput, latency,..) kunnen aanbieden aan eindgebruikers.
 
-[Lees meer...](types/service/redis.md)
+[Lees meer...](types/service/database.md)
 
 #### Distributed
 
-Een service kan ook gebruik maken van een externe **gedistribueerde** bron om cache data weg te schrijven. Bij Digipolis wordt het gebruik van **Redis** aangeraden. Een gedistribueerde cluster verhoogt de high availability en persistance, maar verhoogt ook de kost, complexiteit en kans op data inconsistencies.
+Een service kan ook gebruik maken van een externe **gedistribueerde** bron om cache data weg te schrijven. Een gedistribueerde cluster verhoogt de high availability en persistance, maar verhoogt ook de kost, complexiteit en kans op data inconsistencies.
 
-[Lees meer...](types/service/redis.md)
+[Lees meer...](types/service/database.md)
 
 ### Database
 
@@ -194,11 +194,11 @@ Voor het uitlezen van een cache zijn er maar twee patterns. Algemeen kan genomen
 
 ```python
 def cache_aside(self, content_id):
-    content = redis.get(content_id)
+    content = cache.get(content_id)
     if content is None:
         content = postgresql.get(content_id)
         if content is not None:
-            redis.set(content_id, content)
+            cache.set(content_id, content)
     return content
 ```
 
@@ -223,7 +223,7 @@ def cache_aside(self, content_id):
 
 ```python
 def read_through(self, content_id):
-    redis.get(content_id)
+    cache.get(content_id)
     # Cache or cache library consults db if necessary
 ```
 
@@ -252,7 +252,7 @@ Voor het opvullen van een cache zijn er verschillende patterns. **<u>De juiste k
 
 ```python
 def write_through(self, content):
-    redis.write(content)
+    cache.write(content)
     postgresql.write(content)
 ```
 
@@ -280,7 +280,7 @@ def write_through(self, content):
 import asyncio
 
 def write_back(self, content):
-    redis.write(content)
+    cache.write(content)
     await def write_postgresql_async(content)
     
 async def write_postgresql_async(self, content):
@@ -386,7 +386,7 @@ Een ‘strenge’ TTL, dwz. Een zeer korte TTL kan altijd dynamisch aangepast wo
 
 Eviction is net als Invalidation een proces dat uiteindelijk data uit het cache zal verwijderen, maar gebruikt daarvoor **cachegrootte** als ‘trigger’, **niet tijd**. Wanneer het cache een vooraf bepaalde grootte overtreedt, kan het cache data vrijmaken op basis van een aantal algoritmes.
 
-<u>**Digipolis adviseert in de meeste gevallen het gebruik van Least Recently Used in Redis (volatile-lru)**</u>. Deze policy staat standaar geconfigureerd.
+<u>**Digipolis adviseert in de meeste gevallen het gebruik van Least Recently Used**</u>. Deze policy staat standaar geconfigureerd.
 
 #### Least Recently Used (LRU)
 
@@ -426,9 +426,9 @@ Net als MRU is FIFO enkel in zeer specifieke usecases beter dan LRU of LFU.
 
 Bij deployments van downstream services is het aan te raden om de relevante delen van het cache leeg te maken en opnieuw op te vullen. Het datamodel kan gewijzigd zijn of data van voor de deployment kan stale geworden zijn.
 
-Om dit efficiënt te laten verlopen kunnen calls naar Redis best in batch verstuurd worden. Hierbij willen we niet dat één call de hele transactie doet falen. Dit is wat we non-transactional request batching noemen.
+Om dit efficiënt te laten verlopen kunnen calls naar het cache best in batch verstuurd worden. Hierbij willen we niet dat één call de hele transactie doet falen. Dit is wat we non-transactional request batching noemen.
 
-In Redis kan dit met **Redis Pipelining**.
+In Redis bijvoorbeeld, kan dit met **Redis Pipelining**.
 
 Via een seedscript (client) kunnen meerdere requests naar de Redis server gestuurd worden zonder telkens op het antwoord te wachten, Redis stuurt na afloop het antwoord in één reply terug.
 

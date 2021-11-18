@@ -451,7 +451,28 @@ Het cache kan best met non-transactional request batching weer opgevuld worden.
 
 ## Testing
 
-[WIP]
+Wat was het doel van het cache? Is dit doel bereikt?
+
+### High availability
+
+Hier geldt meten is weten, maar valt moeilijk in tests te gieten. Zie resiliency. In percentages, hoe veel zijn onze systemen ‘up’ zonder functionaliteit te verliezen.
+
+### Performance
+
+Wat is het verschil in gemiddelde response tijden met of zonder cache? Elke engine kan zijn eigen requirements hebben. Ook per tijdstip kunnen deze requirements verschillen. Als rule of thumb, mikken we een response tijd van **< 200ms per API call**.
+
+Werk samen met het Digipolis Testing team (**Blazemeter**) om te kijken of deze doelen behaald worden.
+
+### Resiliency
+
+In resiliency gaan we er van uit dat onze systemen geen 100% high availability kunnen halen. Systemen falen onvermijdelijk. De vraag is hoe bepaalde componenten reageren op het trager worden of falen van andere componenten. Merkt de eindgebruiker iets in performantie of wegvallen van functionaliteit? Hoe en hoe snel herstellen systemen zichzelf wanneer het fout gaat? Hoe detecteren en automatiseren we dit? Hoe snel reageert het support team op niet automatisch herstelbare fouten?
+
+Dit kan getest worden met **chaos engineering**.
+
+* Wat als het cache tijdelijk unavailable is?
+* Wat als de achterliggende business engine tijdelijk unavailable is?
+* Hoe presteert het systeem onder load?
+* ...
 
 ## Aftercare
 

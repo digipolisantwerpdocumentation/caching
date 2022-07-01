@@ -481,6 +481,28 @@ Problematische stale data, omdat 5XX responses zo snel als ze achterliggend opge
 
 <img src="images/thundering-heard.png" width="100%"/>
 
+Wanneer het cache het (tijdelijk) laat afweten, bijvoorbeeld bij zware load, outages of een hoog aantal cache misses. Of wanneer het cache massaal geseed wordt, bijvoorbeeld na een deployment, moet er opgelet worden voor het thundering heard of cache stampede probleem.
+
+Er moet voorkomen worden dat al deze requests alsnog hun weg naar de back-end systemen vinden, die dan op hun beurt hinder kunnen ondervinden of zelfs down gaan. Het cache diende namelijk onder andere om deze systemen te beschermen.
+
+In een gedistribueerde omgeving, met veel horizontaal geschaalde applicaties, kan dit probleem snel uit de hand lopen. Onder load kunnen meerdere instances van eenzelfde service, die zelf ook nog eens een heel aantal threads simultaan kunnen afhandelen, allemaal op ongeveer dezelfde moment, dezelfde key uit het cache opvragen. Wanneer deze key in het cache zit, is er ongetwijfeld geen probleem. De applicatie is hier (hopelijk) voor geschaald.
+
+Wanneer de key echter niet in het cache zit, gaan al die (ongeveer) simultane requests, tegelijkertijd naar de back-end bij een cache miss. De back-end is hier waarschijnlijk niet op voorzien, met potentieel ernstige gevolgen.
+
+#### Request collapsing
+
+Een van de technieken om dit tegen te gaan, is request collapsing. In de pod van een service worden binnenkomende en uitgaande requests vergeleken. Indien deze request hetzelfde zijn, collapsen deze tot één request bij het buitengaan. De andere worden gequeued en wachten op het resultaat. Dit kan in memory of met bijvoorbeeld Redis.
+
+Dit helpt, met relatief kleine resources (cpu en memory) overhead. Indien de service sterk horizontaal geschaald is, doet het probleem zich in kleinere mate nog steeds wel voor. Elke service zal request collapsing enkel voor zichzelf afhandelen.
+
+#### Distributed locks
+
+Vaak kan dit probleem ook met behulp van het cache opgelost worden. Redis biedt hier bijvoorbeeld [Distributed Locks](https://redis.io/docs/reference/patterns/distributed-locks/) voor aan. Locks moeten met enige voorzichtigheid ingesteld worden, om zaken als deadlocks te vermijden.
+
+Distributed locks heeft dezelfde resources overhead als request collapsing, maar het voordeel dat dit het thundering heard probleem over de hele lijn oplost, niet enkel per instance.
+
+Dit heeft dan ook de voorkeur binnen Digipolis.
+
 ## Testing
 
 Wat was het doel van het cache? Is dit doel bereikt?

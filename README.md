@@ -14,12 +14,12 @@
   * [Design Patterns en strategie](#design-patterns-en-strategie)
     + [Reading](#reading)
     + [Writing](#writing)
-    + [Invalidation (Expiration)](#invalidation--expiration-)
+    + [Invalidation (Expiration)](#invalidation-expiration)
     + [Eviction](#eviction)
     + [Seeding](#seeding)
   * [Pitfalls](#pitfalls)
     + [4XX - 5XX](#4xx---5xx)
-    + [Thundering heard / Cache stampede](#thundering-heard---cache-stampede)
+    + [Thundering heard / Cache stampede](#thundering-heard--cache-stampede)
   * [Testing](#testing)
     + [High availability](#high-availability)
     + [Performance](#performance)
@@ -467,7 +467,7 @@ Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) ver
 
 ### 4XX - 5XX
 
-<img src="images/404.png" width="75%"/>
+<img src="images/404.png" width="85%"/>
 
 Bij cache misses die de juiste data ook niet in het achterliggende back-end systeem kunnen vinden, is het aan te raden (of op zijn minst te overwegen) om die negatieve responses ook op te slaan in het cache, zij het met zeer korte [expiry](#invalidation--expiration-). Vooral bij responses in de 5XX range kan dit anders voor veel overlast op de onderliggende back-end systemen zorgen, die op dat moment sowieso al hinder ondervinden.
 
@@ -479,9 +479,7 @@ Problematische stale data, omdat 5XX responses zo snel als ze achterliggend opge
 
 ### Thundering heard / Cache stampede
 
-<img src="images/thundering-heard.png" width="75%"/>
-
-
+<img src="images/thundering-heard.png" width="100%"/>
 
 ## Testing
 

@@ -332,7 +332,7 @@ Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (writ
 
 We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
-Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+Let er op dat je geen [thundering heard](#thundering-heard--cache-stampede) veroorzaakt op achterliggende back-end systemen.
 
 ##### Voor- en nadelen
 
@@ -453,7 +453,7 @@ def with_pipelining
 end
 ```
 
-Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+Let er op dat je geen [thundering heard](#thundering-heard--cache-stampede) veroorzaakt op achterliggende back-end systemen.
 
 #### Cache Outage
 
@@ -461,7 +461,7 @@ Hetzelfde geldt bij een langdurige cache outage. Data kan opnieuw stale geworden
 
 Het cache kan best met non-transactional request batching weer opgevuld worden.
 
-Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+Let er op dat je geen [thundering heard](#thundering-heard--cache-stampede) veroorzaakt op achterliggende back-end systemen.
 
 ## Pitfalls
 
@@ -469,7 +469,7 @@ Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) ver
 
 <img src="images/404.png" width="85%"/>
 
-Bij cache misses die de juiste data ook niet in het achterliggende back-end systeem kunnen vinden, is het aan te raden (of op zijn minst te overwegen) om die negatieve responses ook op te slaan in het cache, zij het met zeer korte [expiry](#invalidation--expiration-). Vooral bij responses in de 5XX range kan dit anders voor veel overlast op de onderliggende back-end systemen zorgen, die op dat moment sowieso al hinder ondervinden.
+Bij cache misses die de juiste data ook niet in het achterliggende back-end systeem kunnen vinden, is het aan te raden (of op zijn minst te overwegen) om die negatieve responses ook op te slaan in het cache, zij het met zeer korte [expiry](#invalidation-expiration). Vooral bij responses in de 5XX range kan dit anders voor veel overlast op de onderliggende back-end systemen zorgen, die op dat moment sowieso al hinder ondervinden.
 
 Wanneer de expiry (TTL) te hoog staat, kan dit dan weer zorgen voor cache vervuiling en stale data.
 
@@ -531,7 +531,7 @@ Een aantal zaken die je kan tracken en op basis van feedback finetunen:
   *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve eviction policy.*
   *Past deze policy wel bij de use case?*
 
-- Effect van [Invalidation]((#invalidation-expiration)) policy.
+- Effect van [Invalidation](#invalidation-expiration) policy.
   
   *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve invalidation policy.*
   *Past deze policy wel bij de use case?*

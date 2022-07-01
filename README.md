@@ -1,5 +1,3 @@
-
-
 # Caching @ Digipolis
 
 - [Caching @ Digipolis](#caching---digipolis)
@@ -16,10 +14,16 @@
   * [Design Patterns en strategie](#design-patterns-en-strategie)
     + [Reading](#reading)
     + [Writing](#writing)
-    + [Invalidation](#invalidation-expiration)
+    + [Invalidation (Expiration)](#invalidation--expiration-)
     + [Eviction](#eviction)
     + [Seeding](#seeding)
+  * [Pitfalls](#pitfalls)
+    + [4XX - 5XX](#4xx---5xx)
+    + [Thundering heard / Cache stampede](#thundering-heard---cache-stampede)
   * [Testing](#testing)
+    + [High availability](#high-availability)
+    + [Performance](#performance)
+    + [Resiliency](#resiliency)
   * [Aftercare](#aftercare)
   * [Bronnen](#bronnen)
 
@@ -146,29 +150,29 @@ In andere gevallen kan een cache oplossingen bieden, wanneer
 *It depends...* Dit zijn enkele vragen die gesteld moeten worden:
 
 * Moet een deel van de data **offline** beschikbaar blijven?
-
+  
   Indien de applicatie (of een deel er van) altijd beschikbaar moet blijven voor een eindgebruiker, zelfs bij een netwerkstoring, moet er gebruik gemaakt worden van [client-side caching](#client-side).
 
 * Is het erg om de **controle** over het cache voor een deel uit handen te geven aan een user?
-
+  
   Ja? client-side caching is ongeschikt. De gebruiker kan dit ongevraagd leeghalen, en zo het systeem belasten. Of door slechte synchronisatie, bijvoorbeeld bij netwerkstoringen, kan het cache snel stale worden. Mogelijks biedt [web caching](#web) of [service caching](#service) een oplossing.
 
 * Waar in de keten hebben we effectief de mogelijkheid om **aanpassingen** uit te voeren?
-
+  
   Is het antwoord overal? Dan wordt aangeraden om [client-side caching](#client-side) met [service caching](#service) te combineren. Service caching geeft de mogelijkheid om met zeer veel controle op service niveau te bepalen welke data wel of niet belangrijk is om *hot* in het cache te houden. Client-caching geeft dan weer de mogelijkheid om zeer specifieke zaken, enkel voor één specifieke user, lokaal op te slaan. Daar kan het enorm snel en betrouwbaar opgehaald worden.
 
 * Wordt er gezocht naar een **quick** (and cheap) **win** of is enige **complexiteit** en bijhorende **kost** aanvaardbaar voor een effectievere oplossing?
-
+  
   Quick wins kunnen gehaald worden uit centrale componenten, waar geen aanpassingen in individuele applicaties nodig zijn. Mogelijks kan er gekeken worden naar caching op het niveau van de [Gateway](#gateway), [Proxies](#reverse-proxy-accelerator) of [HTTP accelerators](#reverse-proxy-accelerator). Of misschien kunnen de default caching mechanismen in centrale [databases](#database) verder gefinetuned worden.
 
 * Is de applicatie **read-heavy**, **write-heavy** of een evenwichtige distributie?
-
+  
   Deze vraag biedt geen uitsluitsel over *waar* in de keten een applicatie best kan cachen, maar kan wel een leidraad zijn in het kiezen van een **strategie**. De uitleg, voor- en nadelen van elke strategie of pattern kan gevonden worden in [design patterns](#design-patterns-en-strategie). Voor write-heavy applicaties kan bijvoorbeeld best gekozen worden voor *write-back / write-behind*.
 
 * Wat is de **aard** van de te cachen data?
-
+  
   Is de data statisch of dynamisch? Is consistency van de data mission-critical of onbelangrijk? Kan relevante data makkelijk gegroepeerd worden voor een grote groep gebruikers of niet? Kan makkelijk voorspeld worden welk subset van de data vaak opgevraagd zal worden?
-
+  
   Gaat het over afbeeldingen, video's, HTML, CSS, JS? Gaat het over unieke userdata/sessions? Chatberichten? Gaat het over constant geüpdatete business data? Gaat het over time-based feeds? Metadata, configuratiedata? Berekende data met zware resource kost zoals reports?
 
 ## Design Patterns en strategie
@@ -204,11 +208,11 @@ def cache_aside(self, content_id):
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Het **datamodel** kan, in tegenstelling tot read-through, onafhankelijk evolueren | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
+| Voordelen                                                                                                                                       | Nadelen                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Het **datamodel** kan, in tegenstelling tot read-through, onafhankelijk evolueren                                                               | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**.           |
 | Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
-| Cache-aside is **resilient**, de applicatie blijft werken, zolang het cache ***of*** de database beschikbaar is. | **Aanpassingen** aan applicatielogica nodig.                 |
+| Cache-aside is **resilient**, de applicatie blijft werken, zolang het cache ***of*** de database beschikbaar is.                                | **Aanpassingen** aan applicatielogica nodig.                                                                                 |
 
 #### Read-through
 
@@ -229,12 +233,12 @@ def read_through(self, content_id):
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Geen aanpassingen** aan applicatielogica nodig.            | Het **datamodel** moet volledig overeenstemmen met dat van de primaire database. |
-| Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Read-through is minder **resilient** dan cache-aside. Het cache is een single-point-of-failure. |
-|                                                              | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**. |
-|                                                              | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
+| Voordelen                                                                                                                                       | Nadelen                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Geen aanpassingen** aan applicatielogica nodig.                                                                                               | Het **datamodel** moet volledig overeenstemmen met dat van de primaire database.                                             |
+| Uitstekend voor **read-heavy** workloads. Enkel keys die effectief vaak en recent opgevraagd worden zitten in het cache, geen ongebruikte data. | Read-through is minder **resilient** dan cache-aside. Het cache is een single-point-of-failure.                              |
+|                                                                                                                                                 | Veel **misses** (wanneer het pattern op zichzelf staat). Een miss zorgt onmiddelijk ook voor een hoge **latency**.           |
+|                                                                                                                                                 | Relatief grote kans op **inconsistencies** (wanneer het pattern op zichzelf staat), aangezien enkel misses geüpdatet worden. |
 
 ### Writing
 
@@ -258,12 +262,12 @@ def write_through(self, content):
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Voordelen                                                                                                                                                                                                          | Nadelen                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | De kans op data **inconsistencies** is zeer klein, aanpassingen worden onmiddelijk in het cache opgenomen.<br />Aan de read kant zorgt dit voor **low-latency reads**, aangezien **first-misses** vermeden worden. | Writes zijn eerder traag, aangezien de commit naar de consumer toe pas gebeurd na voltooing van beide writes. Door de **high-latency writes** is dit mogelijks geen geschikt pattern voor **write-heavy** applicaties. |
-| De kans op **data loss** is zeer klein.                      | **Aanpassingen** aan applicatielogica nodig.                 |
-| **downstream requests** (richting database) zijn zeer beperkt. | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
-| Nood aan data **pre-heating** / pre-warming is zeer klein.   |                                                              |
+| De kans op **data loss** is zeer klein.                                                                                                                                                                            | **Aanpassingen** aan applicatielogica nodig.                                                                                                                                                                           |
+| **downstream requests** (richting database) zijn zeer beperkt.                                                                                                                                                     | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden.                                                                                              |
+| Nood aan data **pre-heating** / pre-warming is zeer klein.                                                                                                                                                         |                                                                                                                                                                                                                        |
 
 #### write-back / write-behind
 
@@ -282,19 +286,19 @@ import asyncio
 def write_back(self, content):
     cache.write(content)
     await def write_postgresql_async(content)
-    
+
 async def write_postgresql_async(self, content):
     postgresql.write(content)
 ```
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Lage **latency** en hoge **throughput** voor write-heavy applicaties. | **Aanpassingen** aan applicatielogica nodig.                 |
-| Lage **latency** en hoge **throughput** voor read-heavy applicaties. | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
-| Lage kans op **first-misses**.                               | Grotere kans op **data-loss** en **inconsistencies** door asynchrone verwerking. |
-| Nood aan data **pre-heating** / pre-warming is zeer klein.   |                                                              |
+| Voordelen                                                             | Nadelen                                                                                                                   |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Lage **latency** en hoge **throughput** voor write-heavy applicaties. | **Aanpassingen** aan applicatielogica nodig.                                                                              |
+| Lage **latency** en hoge **throughput** voor read-heavy applicaties.  | Grote kans op **flooding** (vollopen). Ook data dat zelden opgevraagd wordt, zal initieel in het cache opgeslagen worden. |
+| Lage kans op **first-misses**.                                        | Grotere kans op **data-loss** en **inconsistencies** door asynchrone verwerking.                                          |
+| Nood aan data **pre-heating** / pre-warming is zeer klein.            |                                                                                                                           |
 
 #### write-around
 
@@ -313,11 +317,11 @@ def write_around(self, content):
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| De enige optie als er geen controle over de applicatiecode is. | Houdt enkel steek in **combinatie** met een reading pattern als cache-aside en read-through. |
-| Kleine kans op **flooding** (vollopen). Enkel data dat echt opgevraagd wordt, bevindt zich in het cache (dankzij reading pattern). | Veel **downstream** requests na **first-misses**.            |
-|                                                              | Nood aan data **pre-heating** / pre-warming is hoger.        |
+| Voordelen                                                                                                                          | Nadelen                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| De enige optie als er geen controle over de applicatiecode is.                                                                     | Houdt enkel steek in **combinatie** met een reading pattern als cache-aside en read-through. |
+| Kleine kans op **flooding** (vollopen). Enkel data dat echt opgevraagd wordt, bevindt zich in het cache (dankzij reading pattern). | Veel **downstream** requests na **first-misses**.                                            |
+|                                                                                                                                    | Nood aan data **pre-heating** / pre-warming is hoger.                                        |
 
 #### Cron jobs
 
@@ -328,14 +332,16 @@ Deze methode kan bijvoorbeeld voor een deel de risico’s van write-around (writ
 
 We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
+Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Geen aanpassingen** aan applicatielogica nodig.            | Grote kans op **first-misses** en downstream requests.       |
-| Geeft de mogelijkheid enkel **exact** op te halen wat nodig is. | Grote kans op **inconsistencies**. (acceptabel bij low-write/statische applicaties) |
-| Geeft de mogelijkheid de database enkel onder load te zetten op **luwe** momenten. (bijvoorbeeld ‘s nachts) |                                                              |
-| Cache kan eventueel in **batch** aangevuld worden.           |                                                              |
+| Voordelen                                                                                                   | Nadelen                                                                             |
+| ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Geen aanpassingen** aan applicatielogica nodig.                                                           | Grote kans op **first-misses** en downstream requests.                              |
+| Geeft de mogelijkheid enkel **exact** op te halen wat nodig is.                                             | Grote kans op **inconsistencies**. (acceptabel bij low-write/statische applicaties) |
+| Geeft de mogelijkheid de database enkel onder load te zetten op **luwe** momenten. (bijvoorbeeld ‘s nachts) |                                                                                     |
+| Cache kan eventueel in **batch** aangevuld worden.                                                          |                                                                                     |
 
 #### Events
 
@@ -345,9 +351,9 @@ We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
 ##### Voor- en nadelen
 
-| Voordelen                                            | Nadelen                                                      |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| **Asynchrone** afhandeling (load, availability,...). | Hoog risico voor **stale data** write-heavy applicaties.     |
+| Voordelen                                            | Nadelen                                                                                                                                       |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Asynchrone** afhandeling (load, availability,...). | Hoog risico voor **stale data** write-heavy applicaties.                                                                                      |
 | Weinig **downstream** **requests** nodig.            | Verhoogde **complexiteit** voor zowel business engine als PZA webplatform.<br />Houdt alleen steek als originele service al events uitstuurt. |
 
 ##### Non data-carrying events
@@ -356,11 +362,11 @@ We kunnen dit ook bestempelen als [seeding](#seeding), zie verder hoofdstuk.
 
 ##### Voor- en nadelen
 
-| Voordelen                                                    | Nadelen                                   |
-| ------------------------------------------------------------ | ----------------------------------------- |
-| **Asynchrone** afhandeling (load, availability).             | Veel **downstream requests**.             |
+| Voordelen                                                                                             | Nadelen                                   |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Asynchrone** afhandeling (load, availability).                                                      | Veel **downstream requests**.             |
 | Kleinere kans op **stale data**, aangezien de effectieve data pas op het moment zelf wordt opgehaald. | Zeer hoge **complexiteit**.               |
-|                                                              | **Broos** systeem (too many moving parts) |
+|                                                                                                       | **Broos** systeem (too many moving parts) |
 
 ### Invalidation (Expiration)
 
@@ -378,6 +384,10 @@ SET key_name value EX 60
 
 Zonder de TTL expliciet te setten is deze **oneindig**. Het expliciet benoemen van de TTL op basis van de data is dus zeer belangrijk. Nog belangrijk is in productie te monitoren of deze TTL zinvol is en bij te sturen wanneer nodig. Zie hoofdstuk [Aftercare](#aftercare) voor meer informatie.
 
+#### Soft TTL - Hard TTL
+
+TODO
+
 #### Dynamic TTL met backpressure event
 
 Een ‘strenge’ TTL, dwz. Een zeer korte TTL kan altijd dynamisch aangepast worden door de applicatie, wanneer deze merkt dat er te veel downstream requests binnenkomen en een overload van de service dreigt.
@@ -392,19 +402,19 @@ Eviction is net als Invalidation een proces dat uiteindelijk data uit het cache 
 
 De minst **recent** gebruikte keys (en bijhorende values) worden uit het cache verwijderd, bij overtreding van de geconfigureerde grootte threshold.
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Het dure cache bevat bevat geen data al lang niet meer opgevraagd werd. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LRU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden. |
-|                                                              | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
+| Voordelen                                                                                                                                                             | Nadelen                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Het dure cache bevat bevat geen data al lang niet meer opgevraagd werd. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LRU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden.                                                                                     |
+|                                                                                                                                                                       | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
 
 #### Least Frequently Used (LFU)
 
 De **minst gebruikte** keys (en bijhorende values) worden uit het cache verwijderd, bij overtreding van de geconfigureerde grootte threshold.
 
-| Voordelen                                                    | Nadelen                                                      |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| Het dure cache bevat nooit data dat nooit of amper opgevraagd wordt. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LFU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden. |
-|                                                              | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
+| Voordelen                                                                                                                                                          | Nadelen                                                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Het dure cache bevat nooit data dat nooit of amper opgevraagd wordt. Data dat vaak uitgelezen wordt zal dus meestal in het cache zitten, ook al is de data al oud. | LFU veroorzaakt cache misses bij data dat niet op een voorspelbare manier uitgelezen kan worden.                                                                                     |
+|                                                                                                                                                                    | Oude data kan lang in het cache blijven en heeft dus kans om stale te worden als invalidation policies of strategieën voor het opvullen van het cache niet goed geconfigureerd zijn. |
 
 #### Most Recently Used (MRU)
 
@@ -443,11 +453,35 @@ def with_pipelining
 end
 ```
 
+Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+
 #### Cache Outage
 
 Hetzelfde geldt bij een langdurige cache outage. Data kan opnieuw stale geworden zijn of de data is gewoon verdwenen door de invalidation of eviction policies.
 
 Het cache kan best met non-transactional request batching weer opgevuld worden.
+
+Let er op dat je geen [thundering heard](#thundering-heard---cache-stampede) veroorzaakt op achterliggende back-end systemen.
+
+## Pitfalls
+
+### 4XX - 5XX
+
+<img src="images/404.png" width="75%"/>
+
+Bij cache misses die de juiste data ook niet in het achterliggende back-end systeem kunnen vinden, is het aan te raden (of op zijn minst te overwegen) om die negatieve responses ook op te slaan in het cache, zij het met zeer korte [expiry](#invalidation--expiration-). Vooral bij responses in de 5XX range kan dit anders voor veel overlast op de onderliggende back-end systemen zorgen, die op dat moment sowieso al hinder ondervinden.
+
+Wanneer de expiry (TTL) te hoog staat, kan dit dan weer zorgen voor cache vervuiling en stale data.
+
+Cache vervuiling, omdat de requests die 4XX veroorzaken mogelijks niet vaak opgevraagd zullen worden. Denk maar aan wat bijvoorbeeld path traversal dictionary attacks zouden veroorzaken. Wanneer het cache volloopt zal de [eviction policy](#eviction) genoodzaakt zijn om nuttigere data te verwijderen uit het cache.
+
+Problematische stale data, omdat 5XX responses zo snel als ze achterliggend opgelost zijn, verwijderd moeten worden uit het cache.
+
+### Thundering heard / Cache stampede
+
+<img src="images/thundering-heard.png" width="75%"/>
+
+
 
 ## Testing
 
@@ -483,24 +517,24 @@ De kans dat de juiste cache size, een gezonde cache hit/miss ratio, een beperkt 
 Een aantal zaken die je kan tracken en op basis van feedback finetunen:
 
 - Effectieve cache size.
-
+  
   *Te groot geschaald? Onnodige kost. Te klein geschaald? Performantie drawbacks.*
 
 - Downstream requests (naar business engines).
-
+  
   *Te veel downstream requests kan de onderliggende service belasten en duidt mogelijks op een slechte cache strategie.*
 
 - Total cache hits & misses.
-
+  
   *Minder dan 80% hits, aanpassingen nodig. mik op 90%+ hits*
 
 - Effect [Eviction](#eviction) policy.
-
+  
   *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve eviction policy.*
   *Past deze policy wel bij de use case?*
 
 - Effect van [Invalidation]((#invalidation-expiration)) policy.
-
+  
   *Te veel downstream requests of te veel cache misses kan het resultaat zijn van een foutieve invalidation policy.*
   *Past deze policy wel bij de use case?*
 
@@ -525,4 +559,3 @@ Een aantal zaken die je kan tracken en op basis van feedback finetunen:
 * [Kong - Reverse Proxy Cache](https://docs.konghq.com/hub/kong-inc/proxy-cache/)
 * [Mozilla - HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)
 * [HTTP - RFC7234](https://datatracker.ietf.org/doc/html/rfc7234)
-

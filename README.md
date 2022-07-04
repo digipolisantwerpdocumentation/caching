@@ -386,7 +386,15 @@ Zonder de TTL expliciet te setten is deze **oneindig**. Het expliciet benoemen v
 
 #### Soft TTL - Hard TTL
 
-TODO
+Een korte TTL in Redis kan er voor zorgen dat stale data tot een minimum beperkt wordt. Anderzijds zorgt dit er voor dat het cache snel 'uitgeschakeld' is op vlak van high availability en resiliency. Wanneer de primaire databron om welke reden dan ook niet beschikbaar is, en de hard TTL verstreken is, dan kan er geen data geserved worden aan een eindgebruiker.
+
+**Bijna altijd is het wenselijk om in dit geval alsnog stale data te serven!**
+
+Een oplossing hier voor is het soft TTL - hard TTL pattern. De TTL in het cache zelf, de hard TTL, wordt comfortabel lang genomen, langer dan een typische panne zou duren (bijvoorbeeld 1u, later te finetunen). Een soft TTL wordt geconfigureerd en berekend in de applicatie zelf ten opzichte van de creatie datum in het cache. 
+
+Is de soft TTL verstreken? Dan wordt alsnog de stale data geserved, maar wordt de key in het cache onmiddelijk gerefreshed. Blijkt de back-end tijdelijk onbeschikbaar te zijn, dan blijft de data in het cache vanwege de langere hard TTL bestaan.
+
+Hoewel er een lichte resources overhead (cpu en memory) geïntroduceerd wordt in de service zelf, raadt Digipolis deze techniek aan.
 
 #### Dynamic TTL met backpressure event
 
@@ -569,12 +577,15 @@ Een aantal zaken die je kan tracken en op basis van feedback finetunen:
 * [Blog - System Design Primer](https://github.com/donnemartin/system-design-primer#cache)
 * [Redis - Caching Use cases](https://redis.com/solutions/use-cases/caching/)
 * [Redis - Data Types](https://redis.io/topics/data-types-intro)
+* [Redis - Distributed Locks](https://redis.io/docs/reference/patterns/distributed-locks/)
 * [Redis - Pipelining](https://redis.io/topics/pipelining)
 * [Redis - Eviction](https://docs.redis.com/latest/rs/administering/database-operations/eviction-policy/)
 * [Redis - Transactions](https://redis.io/topics/transactions#cas)
 * [Redis - Indexing](https://redis.io/topics/indexes)
 * [Redis - Client side caching](https://redis.io/topics/client-side-caching)
 * [RedisGears - Write-through / Write-behind](https://github.com/RedisGears/rgsync)
+* [Thundering heard - Request collapsing A](https://medium.com/@nikhilranjan/a-solution-for-thundering-heard-problem-in-node-js-30a1618edc7a)
+* [Thundering heard - Request collapsing B](https://developer.fastly.com/learning/concepts/request-collapsing/)
 * [Kong - Gateway caching](https://docs.konghq.com/gateway-oss/0.11.x/plugin-development/entities-cache/)
 * [Kong - Reverse Proxy Cache](https://docs.konghq.com/hub/kong-inc/proxy-cache/)
 * [Mozilla - HTTP caching](https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching)

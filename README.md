@@ -390,11 +390,19 @@ Een korte TTL in Redis kan er voor zorgen dat stale data tot een minimum beperkt
 
 **Bijna altijd is het wenselijk om in dit geval alsnog stale data te serven!**
 
-Een oplossing hier voor is het soft TTL - hard TTL pattern. De TTL in het cache zelf, de hard TTL, wordt comfortabel lang genomen, langer dan een typische panne zou duren (bijvoorbeeld 1u, later te finetunen). Een soft TTL wordt geconfigureerd en berekend in de applicatie zelf ten opzichte van de creatie datum in het cache. 
+Een oplossing hier voor is het soft TTL - hard TTL pattern. De TTL in het cache zelf, de hard TTL, wordt comfortabel lang genomen, langer dan een typische panne zou duren (bijvoorbeeld 1u, later te finetunen). Een soft TTL wordt geconfigureerd en berekend in de applicatie zelf. Er zijn twee opties:
 
-Is de soft TTL verstreken? Dan wordt alsnog de stale data geserved, maar wordt de key in het cache onmiddelijk gerefreshed. Blijkt de back-end tijdelijk onbeschikbaar te zijn, dan blijft de data in het cache vanwege de langere hard TTL bestaan.
+1. De huidige status van de  TTL van een key in Redis (Hard TTL) wordt opgevraagd en berekend tegenover de initieel geSETte Hard TTL. Is TTL0 - TTLcurrent > Soft TTL, dan is de key stale, serve de key alsnog maar refresh achterliggend het cache (indien achterliggende service responsive is). Is TTL0 - TTLcurrent < Soft TTL, key is niet stale, serve key.
 
-Hoewel er een lichte resources overhead (cpu en memory) geïntroduceerd wordt in de service zelf, raadt Digipolis deze techniek aan.
+2. Er worden 2 keys geSET. één key met de Hard TTL (of zelfs geen TTL), één key met de Soft TTL. Is de soft TTL nog bestaande? Dan is deze call voldoende. Is de Soft TTL key onbestaande? Serve dan de Hard TTL key en refresh achterliggend het cache.
+
+De voordelen van beide opties zijn duidelijk, (potentieel) stale data serven is in 99% van de use cases beter dan geen data serven. De beste optie hangt af van het gebruikerspatroon.
+
+Optie 1 heeft altijd 2 calls nodig, en is dus, wanneer data gewoonlijk wel in het cache zit,niet optimaal. De hoeveelheid data is wel 1/2 van optie 2, wat een relevante overweging kan zijn.
+
+Optie 2 heeft in de meeste gevallen slechts 1 call nodig. Het is wel belangrijk (zeker als de langbestaande key *geen* TTL krijgt) om in de applicatiecode te waken over de synchronisatie in het cache. Dezelfde data leeft dan in feite op minstens 3 plaatsen, de primaire databron, en tweemaal in het cache.
+
+Hoewel er bij soft/hard TTL een lichte resources overhead (cpu en memory) geïntroduceerd wordt in de service zelf, raadt Digipolis deze techniek aan. In de meeste gevallen is optie 2 wellicht de beste optie.
 
 #### Dynamic TTL met backpressure event
 
